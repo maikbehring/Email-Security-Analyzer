@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+  
+  /* Security theme colors */
+  --security-dark: hsl(222, 47%, 11%);
+  --security-card: hsl(215, 25%, 18%);
+  --security-border: hsl(217, 19%, 27%);
+  --risk-safe: hsl(142, 76%, 36%);
+  --risk-warning: hsl(38, 92%, 50%);
+  --risk-danger: hsl(0, 84%, 60%);
+  --risk-unknown: hsl(215, 14%, 54%);
+}
+
+.dark {
+  --background: hsl(222, 47%, 11%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(217, 19%, 27%);
+  --muted-foreground: hsl(215, 14%, 54%);
+  --popover: hsl(215, 25%, 18%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(215, 25%, 18%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(217, 19%, 27%);
+  --input: hsl(217, 19%, 27%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(217, 19%, 27%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(217, 19%, 27%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(216, 34%, 17%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Security theme utilities */
+.bg-security-dark {
+  background-color: var(--security-dark);
+}
+
+.bg-security-card {
+  background-color: var(--security-card);
+}
+
+.border-security-border {
+  border-color: var(--security-border);
+}
+
+.text-risk-safe {
+  color: var(--risk-safe);
+}
+
+.text-risk-warning {
+  color: var(--risk-warning);
+}
+
+.text-risk-danger {
+  color: var(--risk-danger);
+}
+
+.text-risk-unknown {
+  color: var(--risk-unknown);
+}
+
+.bg-risk-safe {
+  background-color: var(--risk-safe);
+}
+
+.bg-risk-warning {
+  background-color: var(--risk-warning);
+}
+
+.bg-risk-danger {
+  background-color: var(--risk-danger);
+}
+
+.bg-risk-unknown {
+  background-color: var(--risk-unknown);
+}
+
+/* File upload zone hover effects */
+.file-upload-zone {
+  transition: all 0.2s ease-in-out;
+}
+
+.file-upload-zone:hover {
+  border-color: var(--primary);
+  background-color: hsl(var(--primary) / 0.05);
+}
+
+/* Risk indicator animations */
+.risk-indicator {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
