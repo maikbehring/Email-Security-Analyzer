@@ -1,4 +1,6 @@
-import { emailAnalyses, type EmailAnalysis, type InsertEmailAnalysis, type User, type InsertUser } from "@shared/schema";
+import { users, emailAnalyses, type EmailAnalysis, type InsertEmailAnalysis, type User, type InsertUser } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -18,56 +20,45 @@ export interface IStorage {
   }>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private analyses: Map<number, EmailAnalysis>;
-  private currentUserId: number;
-  private currentAnalysisId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.analyses = new Map();
-    this.currentUserId = 1;
-    this.currentAnalysisId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async createEmailAnalysis(insertAnalysis: InsertEmailAnalysis): Promise<EmailAnalysis> {
-    const id = this.currentAnalysisId++;
-    const analysis: EmailAnalysis = {
-      ...insertAnalysis,
-      id,
-      uploadedAt: new Date(),
-    };
-    this.analyses.set(id, analysis);
+    const [analysis] = await db
+      .insert(emailAnalyses)
+      .values(insertAnalysis)
+      .returning();
     return analysis;
   }
 
   async getEmailAnalysis(id: number): Promise<EmailAnalysis | undefined> {
-    return this.analyses.get(id);
+    const [analysis] = await db.select().from(emailAnalyses).where(eq(emailAnalyses.id, id));
+    return analysis as EmailAnalysis || undefined;
   }
 
   async getRecentAnalyses(limit: number = 10): Promise<EmailAnalysis[]> {
-    const analyses = Array.from(this.analyses.values())
-      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())
-      .slice(0, limit);
-    return analyses;
+    const analyses = await db
+      .select()
+      .from(emailAnalyses)
+      .orderBy(desc(emailAnalyses.uploadedAt))
+      .limit(limit);
+    return analyses as EmailAnalysis[];
   }
 
   async getAnalysisStats(): Promise<{
@@ -77,17 +68,40 @@ export class MemStorage implements IStorage {
     lowRisk: number;
     thisWeek: number;
   }> {
-    const analyses = Array.from(this.analyses.values());
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     
+    const [totalResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(emailAnalyses);
+    
+    const [highRiskResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(emailAnalyses)
+      .where(eq(emailAnalyses.riskLevel, 'HIGH'));
+    
+    const [mediumRiskResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(emailAnalyses)
+      .where(eq(emailAnalyses.riskLevel, 'MEDIUM'));
+    
+    const [lowRiskResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(emailAnalyses)
+      .where(eq(emailAnalyses.riskLevel, 'LOW'));
+    
+    const [thisWeekResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(emailAnalyses)
+      .where(sql`${emailAnalyses.uploadedAt} > ${oneWeekAgo}`);
+    
     return {
-      totalAnalyzed: analyses.length,
-      highRisk: analyses.filter(a => a.riskLevel === 'HIGH').length,
-      mediumRisk: analyses.filter(a => a.riskLevel === 'MEDIUM').length,
-      lowRisk: analyses.filter(a => a.riskLevel === 'LOW').length,
-      thisWeek: analyses.filter(a => a.uploadedAt > oneWeekAgo).length,
+      totalAnalyzed: totalResult.count,
+      highRisk: highRiskResult.count,
+      mediumRisk: mediumRiskResult.count,
+      lowRisk: lowRiskResult.count,
+      thisWeek: thisWeekResult.count,
     };
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

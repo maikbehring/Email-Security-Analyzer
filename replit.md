@@ -103,7 +103,12 @@ This is a full-stack web application for analyzing email files to detect potenti
 
 ```
 Changelog:
-- July 04, 2025. Initial setup
+- July 04, 2025. Initial setup with in-memory storage
+- July 04, 2025. Added PostgreSQL database with Drizzle ORM
+  * Replaced MemStorage with DatabaseStorage
+  * All email analyses now persisted in PostgreSQL
+  * Database schema includes users and email_analyses tables
+  * Statistics and recent analyses retrieved from database
 ```
 
 ## User Preferences
