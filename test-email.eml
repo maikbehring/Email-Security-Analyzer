@@ -1,0 +1,26 @@
+From: security@paypaI-alerts.com
+To: user@example.com
+Subject: URGENT: Your PayPal Account Will Be Suspended
+Date: Fri, 4 Jul 2025 12:00:00 +0000
+Message-ID: <123456@paypaI-alerts.com>
+MIME-Version: 1.0
+Content-Type: text/html; charset=UTF-8
+
+Dear PayPal Customer,
+
+We have detected suspicious activity on your account. Your account will be SUSPENDED within 24 hours unless you verify your information immediately.
+
+Click here to verify your account: https://paypal-verify.tk/secure-login
+
+This is an urgent matter. Please act immediately to avoid account suspension.
+
+If you do not verify within 24 hours, your account will be permanently closed and all funds frozen.
+
+Best regards,
+PayPal Security Team
+
+This email contains suspicious elements:
+- Domain spoofing (paypaI-alerts.com with capital i instead of l)
+- Suspicious TLD (.tk)
+- Urgent language
+- Threats of account suspension
