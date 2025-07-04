@@ -1,0 +1,97 @@
+🗂️ EPIC 1: E-Mail-Upload & Vorverarbeitung
+User Story 1.1
+
+Als Nutzer möchte ich eine E-Mail-Datei (.eml, .msg oder .txt) hochladen können,
+damit ich sie mit dem Tool analysieren kann.
+
+User Story 1.2
+
+Als System möchte ich E-Mails automatisch parsen (Header, Body, Anhänge extrahieren),
+damit ich alle relevanten Inhalte für die Analyse bereitstelle.
+
+🗂️ EPIC 2: OpenAI KI-Analyse
+User Story 2.1
+
+Als Nutzer möchte ich, dass die KI den Inhalt der E-Mail (Header & Body) in natürlicher Sprache bewertet,
+damit ich auf einen Blick erkenne, ob sie gefährlich oder unauffällig ist.
+
+User Story 2.2
+
+Als System möchte ich den E-Mail-Text an OpenAI senden können,
+damit ich eine Risiko-Bewertung, Begründung und Handlungsempfehlung zurückbekomme.
+
+User Story 2.3
+
+Als Nutzer möchte ich eine Risiko-Ampel (z. B. grün, gelb, rot) als visuelle Bewertung sehen,
+damit ich sofort den Schweregrad einschätzen kann.
+
+🗂️ EPIC 3: Technische Forensik & Sandbox-Checks
+User Story 3.1
+
+Als Nutzer möchte ich, dass das Tool SPF, DKIM und DMARC-Werte automatisch prüft,
+damit ich gefälschte Absender sofort erkenne.
+
+User Story 3.2
+
+Als Nutzer möchte ich alle enthaltenen Links extrahiert und angezeigt bekommen,
+damit ich sie manuell oder automatisiert scannen kann.
+
+User Story 3.3
+
+Als Nutzer möchte ich per Knopfdruck einen Link in VirusTotal oder URLscan.io prüfen lassen,
+damit ich sehe, ob die URL bereits als bösartig bekannt ist.
+
+🗂️ EPIC 4: Sichere Dateiverarbeitung
+User Story 4.1
+
+Als Nutzer möchte ich Anhänge isoliert in einer Sandbox öffnen lassen können,
+damit ich ihren Inhalt prüfen kann, ohne mein System zu gefährden.
+
+User Story 4.2
+
+Als Nutzer möchte ich den Hash (MD5, SHA256) einer Datei berechnen lassen,
+damit ich diesen bei VirusTotal oder anderen Security-Diensten hochladen kann.
+
+🗂️ EPIC 5: Ergebnisse & Reporting
+User Story 5.1
+
+Als Nutzer möchte ich einen zusammenfassenden Bericht als PDF oder JSON exportieren können,
+damit ich ihn an mein Security-Team weitergeben kann.
+
+User Story 5.2
+
+Als Admin möchte ich eine Historie der geprüften Mails sehen,
+damit ich Trends oder wiederkehrende Angriffe erkennen kann.
+
+🗂️ EPIC 6: Integration & Automatisierung
+User Story 6.1
+
+Als Admin möchte ich die KI-Analyse über eine API aufrufen können,
+damit ich sie in bestehende Security-Workflows integrieren kann.
+
+User Story 6.2
+
+Als Nutzer möchte ich Benachrichtigungen erhalten (z. B. E-Mail, Slack),
+wenn eine hochriskante Mail erkannt wird.
+
+🗂️ EPIC 7: Benutzeroberfläche
+User Story 7.1
+
+Als Nutzer möchte ich ein Dashboard mit allen Analysen, Bewertungen und Details sehen,
+damit ich alle Informationen an einem Ort habe.
+
+User Story 7.2
+
+Als Nutzer möchte ich eine einfache Möglichkeit haben, Phishing-Verdacht zu melden oder zu blockieren,
+damit ich schnell reagieren kann.
+
+✅ Optional: Datenschutz & Audit
+User Story 8.1
+
+Als Admin möchte ich sicherstellen, dass keine sensiblen Inhalte dauerhaft gespeichert werden,
+damit ich Compliance-Vorgaben einhalte.
+
+User Story 8.2
+
+Als Admin möchte ich Logs und Zugriffe protokollieren,
+damit ich alle Prüfungen nachvollziehen kann.
