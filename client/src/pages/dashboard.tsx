@@ -96,12 +96,12 @@ export default function Dashboard() {
       pdf.setTextColor(80, 80, 80);
       
       const lines = [
-        `File: ${data.fileName}`,
-        `Date: ${new Date(data.uploadedAt).toLocaleDateString('de-DE')}`,
-        `Risk Level: ${data.riskLevel}`,
-        `Subject: ${data.emailSubject || 'No Subject'}`,
-        `From: ${data.emailFrom || 'Unknown Sender'}`,
-        `To: ${data.emailTo || 'Unknown Recipient'}`
+        `File: ${data.analysis?.fileName || 'Unknown File'}`,
+        `Date: ${new Date(data.analysis?.uploadedAt || new Date()).toLocaleDateString('de-DE')}`,
+        `Risk Level: ${data.analysis?.riskLevel || 'Unknown'}`,
+        `Subject: ${data.email?.subject || 'No Subject'}`,
+        `From: ${data.email?.from || 'Unknown Sender'}`,
+        `To: ${data.email?.to || 'Unknown Recipient'}`
       ];
       
       lines.forEach(line => {
@@ -118,25 +118,39 @@ export default function Dashboard() {
       yPosition += 10;
       
       pdf.setFontSize(10);
-      if (data.analysis?.riskReasons) {
-        data.analysis.riskReasons.forEach((reason: string) => {
-          const wrappedText = pdf.splitTextToSize(`• ${reason}`, pageWidth - 40);
-          pdf.text(wrappedText, 20, yPosition);
-          yPosition += wrappedText.length * 5;
-        });
+      if (data.assessment?.description) {
+        const descriptionText = pdf.splitTextToSize(data.assessment.description, pageWidth - 40);
+        pdf.text(descriptionText, 20, yPosition);
+        yPosition += descriptionText.length * 5;
       }
       
       yPosition += 10;
       
+      // Authentication Results
+      if (data.authentication) {
+        pdf.setFontSize(14);
+        pdf.setTextColor(60, 60, 60);
+        pdf.text('Email Authentication', 20, yPosition);
+        yPosition += 10;
+        
+        pdf.setFontSize(10);
+        pdf.text(`SPF: ${data.authentication.spf}`, 20, yPosition);
+        yPosition += 6;
+        pdf.text(`DKIM: ${data.authentication.dkim}`, 20, yPosition);
+        yPosition += 6;
+        pdf.text(`DMARC: ${data.authentication.dmarc}`, 20, yPosition);
+        yPosition += 10;
+      }
+      
       // Recommendations
-      if (data.analysis?.recommendations) {
+      if (data.assessment?.recommendations) {
         pdf.setFontSize(14);
         pdf.setTextColor(60, 60, 60);
         pdf.text('Security Recommendations', 20, yPosition);
         yPosition += 10;
         
         pdf.setFontSize(10);
-        data.analysis.recommendations.forEach((rec: string) => {
+        data.assessment.recommendations.forEach((rec: string) => {
           const wrappedText = pdf.splitTextToSize(`• ${rec}`, pageWidth - 40);
           pdf.text(wrappedText, 20, yPosition);
           yPosition += wrappedText.length * 5;
@@ -231,15 +245,6 @@ export default function Dashboard() {
         
         yPosition += 5;
       });
-      
-      // Footer
-      const totalPages = pdf.internal.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(8);
-        pdf.setTextColor(120, 120, 120);
-        pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-      }
       
       // Save PDF
       pdf.save(`email-security-summary-${new Date().toISOString().split('T')[0]}.pdf`);
