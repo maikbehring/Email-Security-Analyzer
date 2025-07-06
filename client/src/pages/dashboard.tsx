@@ -73,6 +73,62 @@ export default function Dashboard() {
     }
   };
 
+  const handleExportAllReports = async () => {
+    try {
+      if (!recentAnalyses || recentAnalyses.length === 0) {
+        alert('No analyses available to export');
+        return;
+      }
+
+      // Create a comprehensive report with all analyses and statistics
+      const reportData = {
+        generatedAt: new Date().toISOString(),
+        summary: {
+          totalAnalyses: stats?.totalAnalyzed || 0,
+          riskDistribution: {
+            high: stats?.highRisk || 0,
+            medium: stats?.mediumRisk || 0,
+            low: stats?.lowRisk || 0
+          },
+          thisWeekCount: stats?.thisWeek || 0
+        },
+        analyses: recentAnalyses.map(analysis => ({
+          id: analysis.id,
+          fileName: analysis.fileName,
+          uploadedAt: analysis.uploadedAt,
+          sender: analysis.emailFrom,
+          subject: analysis.emailSubject,
+          riskLevel: analysis.riskLevel,
+          confidence: analysis.confidence,
+          assessment: analysis.aiAssessment,
+          recommendations: analysis.recommendations,
+          authentication: {
+            spf: analysis.spfResult,
+            dkim: analysis.dkimResult,
+            dmarc: analysis.dmarcResult
+          },
+          extractedLinks: analysis.extractedLinks,
+          attachments: analysis.attachments
+        }))
+      };
+
+      // Create and download the file
+      const jsonString = JSON.stringify(reportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `email-security-report-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export all reports failed:', error);
+      alert('Failed to export reports');
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-security-dark text-slate-100">
       <Sidebar />
@@ -86,7 +142,12 @@ export default function Dashboard() {
               <p className="text-sm text-slate-400">Upload and analyze email files for security threats</p>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm" className="bg-slate-700 border-slate-600 hover:bg-slate-600">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-slate-700 border-slate-600 hover:bg-slate-600"
+                onClick={handleExportAllReports}
+              >
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
@@ -184,7 +245,11 @@ export default function Dashboard() {
                       <Clock className="w-4 h-4 mr-2" />
                       View Recent
                     </Button>
-                    <Button variant="outline" className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600">
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-slate-700 border-slate-600 hover:bg-slate-600"
+                      onClick={handleExportAllReports}
+                    >
                       <Download className="w-4 h-4 mr-2" />
                       Export Report
                     </Button>
