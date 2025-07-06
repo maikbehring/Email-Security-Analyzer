@@ -1,13 +1,61 @@
 import { Shield, Home, Mail, Clock, BarChart3, Settings, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
-export function Sidebar() {
+interface SidebarProps {
+  onHistoryClick?: () => void;
+  onDashboardClick?: () => void;
+}
+
+export function Sidebar({ onHistoryClick, onDashboardClick }: SidebarProps = {}) {
+  const [location, setLocation] = useLocation();
+  
   const menuItems = [
-    { icon: Home, label: "Dashboard", active: true },
-    { icon: Mail, label: "New Analysis", active: false },
-    { icon: Clock, label: "History", active: false },
-    { icon: BarChart3, label: "Reports", active: false },
-    { icon: Settings, label: "Settings", active: false },
+    { 
+      icon: Home, 
+      label: "Dashboard", 
+      active: location === "/" || location === "",
+      onClick: () => {
+        setLocation("/");
+        onDashboardClick?.();
+      }
+    },
+    { 
+      icon: Mail, 
+      label: "New Analysis", 
+      active: false,
+      onClick: () => {
+        // Scroll to upload section
+        const uploadSection = document.querySelector('[data-upload-section]');
+        uploadSection?.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
+    { 
+      icon: Clock, 
+      label: "History", 
+      active: false,
+      onClick: () => {
+        onHistoryClick?.();
+      }
+    },
+    { 
+      icon: BarChart3, 
+      label: "Reports", 
+      active: false,
+      onClick: () => {
+        // Scroll to stats section
+        const statsSection = document.querySelector('[data-stats-section]');
+        statsSection?.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
+    { 
+      icon: Settings, 
+      label: "Settings", 
+      active: false,
+      onClick: () => {
+        alert('Settings page coming soon!');
+      }
+    },
   ];
 
   return (
@@ -35,6 +83,7 @@ export function Sidebar() {
                     ? "bg-blue-600/20 text-blue-400 border border-blue-600/30 hover:bg-blue-600/30" 
                     : "text-slate-300 hover:bg-slate-700/50 hover:text-white"
                 }`}
+                onClick={item.onClick}
               >
                 <Icon className="w-5 h-5 mr-3" />
                 <span className="text-sm font-medium">{item.label}</span>
