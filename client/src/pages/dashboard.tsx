@@ -6,6 +6,7 @@ import { AnalysisResults } from "@/components/analysis-results";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import jsPDF from "jspdf";
 import { 
   Shield, 
   AlertTriangle, 
@@ -71,73 +72,180 @@ export default function Dashboard() {
   const handleExport = async (analysisId: number) => {
     try {
       const response = await fetch(`/api/analyses/${analysisId}/export`);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `analysis-${analysisId}.json`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const data = await response.json();
+      
+      // Create PDF
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.width;
+      let yPosition = 20;
+      
+      // Header
+      pdf.setFontSize(20);
+      pdf.setTextColor(40, 40, 40);
+      pdf.text('Email Security Analysis Report', pageWidth / 2, yPosition, { align: 'center' });
+      
+      yPosition += 20;
+      
+      // Basic Info
+      pdf.setFontSize(14);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text('Analysis Details', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(80, 80, 80);
+      
+      const lines = [
+        `File: ${data.fileName}`,
+        `Date: ${new Date(data.uploadedAt).toLocaleDateString('de-DE')}`,
+        `Risk Level: ${data.riskLevel}`,
+        `Subject: ${data.emailSubject || 'No Subject'}`,
+        `From: ${data.emailFrom || 'Unknown Sender'}`,
+        `To: ${data.emailTo || 'Unknown Recipient'}`
+      ];
+      
+      lines.forEach(line => {
+        pdf.text(line, 20, yPosition);
+        yPosition += 8;
+      });
+      
+      yPosition += 10;
+      
+      // Risk Assessment
+      pdf.setFontSize(14);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text('Risk Assessment', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(10);
+      if (data.analysis?.riskReasons) {
+        data.analysis.riskReasons.forEach((reason: string) => {
+          const wrappedText = pdf.splitTextToSize(`• ${reason}`, pageWidth - 40);
+          pdf.text(wrappedText, 20, yPosition);
+          yPosition += wrappedText.length * 5;
+        });
+      }
+      
+      yPosition += 10;
+      
+      // Recommendations
+      if (data.analysis?.recommendations) {
+        pdf.setFontSize(14);
+        pdf.setTextColor(60, 60, 60);
+        pdf.text('Security Recommendations', 20, yPosition);
+        yPosition += 10;
+        
+        pdf.setFontSize(10);
+        data.analysis.recommendations.forEach((rec: string) => {
+          const wrappedText = pdf.splitTextToSize(`• ${rec}`, pageWidth - 40);
+          pdf.text(wrappedText, 20, yPosition);
+          yPosition += wrappedText.length * 5;
+        });
+      }
+      
+      // Save PDF
+      pdf.save(`email-analysis-${analysisId}.pdf`);
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error('PDF Export failed:', error);
     }
   };
 
   const handleExportAllReports = async () => {
     try {
       if (!recentAnalyses || recentAnalyses.length === 0) {
-        alert('No analyses available to export');
+        alert('Keine Analysen zum Exportieren verfügbar');
         return;
       }
 
-      // Create a comprehensive report with all analyses and statistics
-      const reportData = {
-        generatedAt: new Date().toISOString(),
-        summary: {
-          totalAnalyses: stats?.totalAnalyzed || 0,
-          riskDistribution: {
-            high: stats?.highRisk || 0,
-            medium: stats?.mediumRisk || 0,
-            low: stats?.lowRisk || 0
-          },
-          thisWeekCount: stats?.thisWeek || 0
-        },
-        analyses: recentAnalyses.map(analysis => ({
-          id: analysis.id,
-          fileName: analysis.fileName,
-          uploadedAt: analysis.uploadedAt,
-          sender: analysis.emailFrom,
-          subject: analysis.emailSubject,
-          riskLevel: analysis.riskLevel,
-          confidence: analysis.confidence,
-          assessment: analysis.aiAssessment,
-          recommendations: analysis.recommendations,
-          authentication: {
-            spf: analysis.spfResult,
-            dkim: analysis.dkimResult,
-            dmarc: analysis.dmarcResult
-          },
-          extractedLinks: analysis.extractedLinks,
-          attachments: analysis.attachments
-        }))
-      };
-
-      // Create and download the file
-      const jsonString = JSON.stringify(reportData, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `email-security-report-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Create comprehensive PDF report
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.width;
+      const pageHeight = pdf.internal.pageSize.height;
+      let yPosition = 20;
+      
+      // Header
+      pdf.setFontSize(22);
+      pdf.setTextColor(40, 40, 40);
+      pdf.text('Email Security Summary Report', pageWidth / 2, yPosition, { align: 'center' });
+      
+      yPosition += 20;
+      
+      // Date
+      pdf.setFontSize(10);
+      pdf.setTextColor(120, 120, 120);
+      pdf.text(`Generated: ${new Date().toLocaleDateString('de-DE')} ${new Date().toLocaleTimeString('de-DE')}`, pageWidth / 2, yPosition, { align: 'center' });
+      
+      yPosition += 20;
+      
+      // Statistics Summary
+      pdf.setFontSize(16);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text('Security Overview', 20, yPosition);
+      yPosition += 15;
+      
+      pdf.setFontSize(12);
+      const statsLines = [
+        `Total Analyzed Emails: ${stats?.totalAnalyzed || 0}`,
+        `High Risk: ${stats?.highRisk || 0}`,
+        `Medium Risk: ${stats?.mediumRisk || 0}`, 
+        `Low Risk: ${stats?.lowRisk || 0}`,
+        `This Week: ${stats?.thisWeek || 0}`
+      ];
+      
+      statsLines.forEach(line => {
+        pdf.text(line, 20, yPosition);
+        yPosition += 8;
+      });
+      
+      yPosition += 15;
+      
+      // Recent Analyses
+      pdf.setFontSize(16);
+      pdf.text('Recent Analyses', 20, yPosition);
+      yPosition += 10;
+      
+      recentAnalyses.slice(0, 10).forEach((analysis, index) => {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 50) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        pdf.setFontSize(12);
+        pdf.setTextColor(40, 40, 40);
+        pdf.text(`${index + 1}. ${analysis.fileName}`, 20, yPosition);
+        yPosition += 8;
+        
+        pdf.setFontSize(10);
+        pdf.setTextColor(80, 80, 80);
+        pdf.text(`   Risk: ${analysis.riskLevel} | From: ${analysis.emailFrom || 'Unknown'}`, 20, yPosition);
+        yPosition += 6;
+        pdf.text(`   Date: ${formatDate(analysis.uploadedAt)}`, 20, yPosition);
+        yPosition += 6;
+        
+        if (analysis.emailSubject) {
+          const subjectText = pdf.splitTextToSize(`   Subject: ${analysis.emailSubject}`, pageWidth - 40);
+          pdf.text(subjectText, 20, yPosition);
+          yPosition += subjectText.length * 6;
+        }
+        
+        yPosition += 5;
+      });
+      
+      // Footer
+      const totalPages = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(120, 120, 120);
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+      }
+      
+      // Save PDF
+      pdf.save(`email-security-summary-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
-      console.error('Export all reports failed:', error);
-      alert('Failed to export reports');
+      console.error('PDF Export failed:', error);
+      alert('Export fehlgeschlagen');
     }
   };
 
@@ -286,7 +394,7 @@ export default function Dashboard() {
                                       size="sm"
                                       variant="ghost"
                                       className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
-                                      onClick={() => setSelectedAnalysis({ analysis })}
+                                      onClick={() => setSelectedAnalysis(analysis)}
                                     >
                                       <Eye className="w-4 h-4" />
                                     </Button>
@@ -505,7 +613,7 @@ export default function Dashboard() {
                                       size="sm"
                                       variant="ghost"
                                       className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
-                                      onClick={() => setSelectedAnalysis({ analysis })}
+                                      onClick={() => setSelectedAnalysis(analysis)}
                                     >
                                       <Eye className="w-4 h-4" />
                                     </Button>
@@ -724,7 +832,7 @@ export default function Dashboard() {
                                   size="sm"
                                   variant="ghost"
                                   className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
-                                  onClick={() => setSelectedAnalysis({ analysis })}
+                                  onClick={() => setSelectedAnalysis(analysis)}
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Button>
